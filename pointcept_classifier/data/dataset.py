@@ -365,16 +365,22 @@ class IceCubeDataset(Dataset):
             processed_files = set()
             for filepath, event_id in self.events:
                 if filepath not in processed_files:
-                    # Read label and event_id columns only
-                    table = pq.read_table(filepath, columns=['event_id', 'label'])
+                    # Check available columns first
+                    parquet_file = pq.ParquetFile(filepath)
+                    column_names = parquet_file.schema.names
+                    
+                    # Determine columns to read
+                    cols_to_read = ['event_id', 'label']
+                    if 'split' in column_names:
+                        cols_to_read.append('split')
+                    
+                    # Read necessary columns only
+                    table = pq.read_table(filepath, columns=cols_to_read)
                     df = table.to_pandas()
                     
                     # Filter by split if available
-                    if 'split' in pq.read_table(filepath).column_names:
-                        split_table = pq.read_table(filepath, columns=['event_id', 'split'])
-                        split_df = split_table.to_pandas()
-                        event_ids = split_df[split_df['split'] == self.split]['event_id'].unique()
-                        df = df[df['event_id'].isin(event_ids)]
+                    if 'split' in df.columns:
+                        df = df[df['split'] == self.split]
                     
                     # Count labels for unique events
                     for eid in df['event_id'].unique():
