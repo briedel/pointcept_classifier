@@ -30,8 +30,8 @@ jobs:
     
     - name: Check code style
       run: |
-        black --check pointcept_classifier/ train.py inference.py || true
-        flake8 pointcept_classifier/ --max-line-length=100 || true
+        black --check pointcept_classifier/ train.py inference.py
+        flake8 pointcept_classifier/ --max-line-length=100
     
     - name: Check imports and syntax
       run: |

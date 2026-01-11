@@ -57,9 +57,15 @@ class PointceptClassifier(nn.Module):
             self.backbone = self._create_simple_backbone()
             self.backbone_out_dim = hidden_dim
         
+        # Account for global pooling (max + avg)
+        if self.use_global_pooling:
+            classifier_input_dim = self.backbone_out_dim * 2
+        else:
+            classifier_input_dim = self.backbone_out_dim
+        
         # Classification head
         self.classifier = nn.Sequential(
-            nn.Linear(self.backbone_out_dim, hidden_dim),
+            nn.Linear(classifier_input_dim, hidden_dim),
             nn.BatchNorm1d(hidden_dim),
             nn.ReLU(),
             nn.Dropout(dropout),
@@ -83,8 +89,10 @@ class PointceptClassifier(nn.Module):
     
     def _create_simple_backbone(self) -> nn.Module:
         """Create a simple PointNet-style backbone."""
+        # SimplePointNet processes concatenated coord + feat
+        # So input channels = 3 (coords) + in_channels (features)
         return SimplePointNet(
-            in_channels=self.in_channels,
+            in_channels=3 + self.in_channels,
             out_channels=self.hidden_dim
         )
     
@@ -125,11 +133,6 @@ class PointceptClassifier(nn.Module):
                 max_pool = torch.max(features, dim=1)[0]  # (B, D)
                 avg_pool = torch.mean(features, dim=1)     # (B, D)
                 features = torch.cat([max_pool, avg_pool], dim=-1)  # (B, 2*D)
-                
-                # Adjust classifier input if needed
-                if features.shape[1] != self.backbone_out_dim:
-                    self.backbone_out_dim = features.shape[1]
-                    self._rebuild_classifier()
             else:
                 features = features[:, 0, :]  # Use first point feature
         
@@ -137,21 +140,6 @@ class PointceptClassifier(nn.Module):
         logits = self.classifier(features)
         
         return logits
-    
-    def _rebuild_classifier(self):
-        """Rebuild classifier with correct input dimension."""
-        hidden_dim = self.hidden_dim
-        self.classifier = nn.Sequential(
-            nn.Linear(self.backbone_out_dim, hidden_dim),
-            nn.BatchNorm1d(hidden_dim),
-            nn.ReLU(),
-            nn.Dropout(self.dropout),
-            nn.Linear(hidden_dim, hidden_dim // 2),
-            nn.BatchNorm1d(hidden_dim // 2),
-            nn.ReLU(),
-            nn.Dropout(self.dropout),
-            nn.Linear(hidden_dim // 2, self.num_classes)
-        )
     
     def predict(
         self,
