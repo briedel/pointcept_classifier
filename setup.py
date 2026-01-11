@@ -48,10 +48,4 @@ setup(
             "mypy>=0.910",
         ],
     },
-    entry_points={
-        "console_scripts": [
-            "icecube-train=train:main",
-            "icecube-infer=inference:main",
-        ],
-    },
 )

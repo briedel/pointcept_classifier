@@ -44,6 +44,7 @@ class PointceptClassifier(nn.Module):
         self.num_classes = num_classes
         self.in_channels = in_channels
         self.hidden_dim = hidden_dim
+        self.dropout = dropout
         self.use_global_pooling = use_global_pooling
         
         # Use provided backbone or create a simple default
@@ -144,11 +145,11 @@ class PointceptClassifier(nn.Module):
             nn.Linear(self.backbone_out_dim, hidden_dim),
             nn.BatchNorm1d(hidden_dim),
             nn.ReLU(),
-            nn.Dropout(0.5),
+            nn.Dropout(self.dropout),
             nn.Linear(hidden_dim, hidden_dim // 2),
             nn.BatchNorm1d(hidden_dim // 2),
             nn.ReLU(),
-            nn.Dropout(0.5),
+            nn.Dropout(self.dropout),
             nn.Linear(hidden_dim // 2, self.num_classes)
         )
     
