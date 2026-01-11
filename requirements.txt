@@ -1,0 +1,13 @@
+# Core dependencies
+numpy>=1.21.0
+torch>=1.10.0
+PyYAML>=5.4.0
+h5py>=3.0.0
+tqdm>=4.62.0
+
+# Optional: Pointcept (install separately following Pointcept documentation)
+# pointcept
+
+# Utilities
+scikit-learn>=0.24.0
+matplotlib>=3.4.0
