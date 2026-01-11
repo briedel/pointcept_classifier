@@ -3,6 +3,7 @@ numpy>=1.21.0
 torch>=1.10.0
 PyYAML>=5.4.0
 h5py>=3.0.0
+pyarrow>=10.0.0
 tqdm>=4.62.0
 
 # Optional: Pointcept (install separately following Pointcept documentation)

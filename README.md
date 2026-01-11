@@ -8,12 +8,18 @@ This repository provides tools to apply state-of-the-art point cloud deep learni
 
 ### Features
 
-- **IceCube-specific dataset loader** for HDF5 data format
+- **IceCube-specific dataset loader** for HDF5 and Parquet data formats
 - **Flexible model architecture** supporting simple baselines and advanced Pointcept models
 - **Data preprocessing and augmentation** tailored for detector geometry
 - **Training and inference scripts** with extensive configuration options
 - **Class-weighted training** for handling imbalanced datasets
 - **Comprehensive evaluation metrics** including per-class accuracy and confusion matrices
+
+## Requirements
+
+- Python 3.10 or higher
+- PyTorch 1.10+
+- See `requirements.txt` for full dependencies
 
 ## Installation
 
@@ -35,9 +41,11 @@ For advanced models like PointTransformer, install Pointcept:
 # https://github.com/Pointcept/Pointcept
 ```
 
-## Data Format
+## Data Formats
 
-The classifier expects IceCube events in HDF5 format with the following structure:
+The classifier supports two data formats for IceCube events:
+
+### HDF5 Format
 
 ```
 data.h5
@@ -52,11 +60,35 @@ data.h5
 └── test/
 ```
 
+### Parquet Format
+
+```
+data.parquet
+Columns:
+  - event_id: event identifier
+  - x, y, z: PMT positions (or positions array column)
+  - time, charge, ...: feature columns (or features array column)
+  - label: integer class label
+  - split: 'train', 'val', or 'test' (optional)
+```
+
+The dataset automatically detects the file format based on the file extension. You can also explicitly specify the format:
+
+```python
+from pointcept_classifier.data import IceCubeDataset
+
+# Auto-detect format
+dataset = IceCubeDataset(data_path="events.parquet", split='train')
+
+# Explicitly specify format
+dataset = IceCubeDataset(data_path="events.h5", split='train', file_format='hdf5')
+```
+
 ## Quick Start
 
 ### 1. Prepare Your Data
 
-Organize your IceCube events into HDF5 format as described above.
+Organize your IceCube events into HDF5 or Parquet format as described above.
 
 ### 2. Configure Training
 
@@ -64,7 +96,7 @@ Edit `configs/default_config.yaml` to set your data path and parameters:
 
 ```yaml
 data:
-  path: "/path/to/your/icecube/data.h5"
+  path: "/path/to/your/icecube/data.h5"  # or .parquet
   max_points: 5000
   class_names:
     - "track"
