@@ -13,7 +13,8 @@ print("=" * 60)
 # 1. Installation
 print("\n1. INSTALLATION")
 print("-" * 60)
-print("""
+print(
+    """
 # Install dependencies
 pip install -r requirements.txt
 
@@ -22,12 +23,14 @@ pip install -e .
 
 # Optional: Install Pointcept for advanced models
 # Follow instructions at: https://github.com/Pointcept/Pointcept
-""")
+"""
+)
 
 # 2. Data Preparation
 print("\n2. DATA PREPARATION")
 print("-" * 60)
-print("""
+print(
+    """
 Your IceCube data should be in HDF5 format:
 
 Structure:
@@ -43,12 +46,14 @@ Structure:
 
 Create synthetic data for testing:
   python examples/create_synthetic_data.py --output synthetic_data.h5 --num_events 1000
-""")
+"""
+)
 
 # 3. Training
 print("\n3. TRAINING")
 print("-" * 60)
-print("""
+print(
+    """
 Edit configs/default_config.yaml to set your data path, then:
 
   python train.py --config configs/default_config.yaml --output_dir outputs/my_experiment
@@ -59,12 +64,14 @@ Training options:
   --output_dir: Where to save checkpoints and logs
   --resume: Resume from checkpoint
   --device: cuda or cpu
-""")
+"""
+)
 
 # 4. Evaluation
 print("\n4. EVALUATION")
 print("-" * 60)
-print("""
+print(
+    """
 Evaluate a trained model:
 
   python inference.py \\
@@ -77,12 +84,14 @@ This will:
   - Evaluate on test data
   - Print metrics and confusion matrix
   - Save results to JSON
-""")
+"""
+)
 
 # 5. Programmatic Usage
 print("\n5. PROGRAMMATIC USAGE")
 print("-" * 60)
-print("""
+print(
+    """
 Use the classifier in your own code:
 
 ```python
@@ -121,12 +130,14 @@ with torch.no_grad():
 print(f"Predicted: {dataset.class_names[predictions.item()]}")
 print(f"Confidence: {probabilities.max():.3f}")
 ```
-""")
+"""
+)
 
 # 6. Example Scripts
 print("\n6. EXAMPLE SCRIPTS")
 print("-" * 60)
-print("""
+print(
+    """
 Try the example scripts:
 
   # Create synthetic data
@@ -134,12 +145,14 @@ Try the example scripts:
 
   # Run usage examples
   python examples/usage_example.py
-""")
+"""
+)
 
 # 7. Configuration
 print("\n7. CONFIGURATION")
 print("-" * 60)
-print("""
+print(
+    """
 Key configuration options in configs/default_config.yaml:
 
 data:
@@ -163,24 +176,28 @@ training:
   num_epochs: 100
   learning_rate: 0.001
   use_class_weights: true    # For imbalanced data
-""")
+"""
+)
 
 # 8. Advanced Features
 print("\n8. ADVANCED FEATURES")
 print("-" * 60)
-print("""
+print(
+    """
 - Class weights for imbalanced datasets
 - Data augmentation (rotation, jittering, scaling)
 - Flexible model architectures
 - Integration with Pointcept models
 - Comprehensive evaluation metrics
 - Custom preprocessing pipelines
-""")
+"""
+)
 
 # 9. Next Steps
 print("\n9. NEXT STEPS")
 print("-" * 60)
-print("""
+print(
+    """
 1. Generate synthetic data to test the pipeline
 2. Convert your IceCube data to the HDF5 format
 3. Train a simple baseline model
@@ -189,7 +206,8 @@ print("""
 6. Fine-tune hyperparameters using validation set
 
 For more details, see README.md
-""")
+"""
+)
 
 print("\n" + "=" * 60)
 print("Ready to classify IceCube events!")

@@ -1,7 +1,7 @@
 """
 Pointcept Classifier for IceCube Events
 
-A framework for using Pointcept point cloud models to classify 
+A framework for using Pointcept point cloud models to classify
 neutrino events from the IceCube detector.
 """
 
