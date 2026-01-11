@@ -1,0 +1,35 @@
+# Configuration for using Pointcept PointTransformer with IceCube
+
+data:
+  path: "/path/to/icecube/data"
+  max_points: 8192
+  normalize: true
+  augment: true
+  class_names:
+    - "nu_e"        # Electron neutrino
+    - "nu_mu"       # Muon neutrino
+    - "nu_tau"      # Tau neutrino
+    - "noise"       # Background
+
+model:
+  name: "pointtransformer"
+  in_channels: 3                  # time, charge, auxiliary
+  hidden_dim: 512
+  dropout: 0.3
+  num_layers: 4
+  num_heads: 8
+
+training:
+  batch_size: 16
+  num_epochs: 200
+  learning_rate: 0.0005
+  weight_decay: 0.0001
+  lr_step_size: 30
+  lr_gamma: 0.7
+  num_workers: 8
+  use_class_weights: true
+  gradient_clip: 1.0
+
+evaluation:
+  batch_size: 32
+  save_predictions: true

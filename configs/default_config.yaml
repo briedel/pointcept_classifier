@@ -1,0 +1,35 @@
+# Example configuration for IceCube event classification with Pointcept
+
+# Data configuration
+data:
+  path: "/path/to/icecube/data"  # Path to HDF5 data files
+  max_points: 5000                # Maximum points per event
+  normalize: true                 # Normalize coordinates
+  augment: true                   # Apply data augmentation
+  class_names:                    # Event classes
+    - "track"                     # Muon tracks
+    - "cascade"                   # EM/hadronic cascades
+    - "noise"                     # Background noise
+
+# Model configuration
+model:
+  name: "simple"                  # Model architecture (simple, pointnet, pointtransformer)
+  in_channels: 2                  # Number of input features (time, charge)
+  hidden_dim: 256                 # Hidden dimension
+  dropout: 0.5                    # Dropout rate
+
+# Training configuration
+training:
+  batch_size: 32                  # Batch size
+  num_epochs: 100                 # Number of epochs
+  learning_rate: 0.001            # Initial learning rate
+  weight_decay: 0.0001            # L2 regularization
+  lr_step_size: 20                # LR scheduler step size
+  lr_gamma: 0.5                   # LR scheduler decay factor
+  num_workers: 4                  # Number of data loading workers
+  use_class_weights: true         # Use class weights for imbalanced data
+
+# Evaluation configuration
+evaluation:
+  batch_size: 64                  # Batch size for evaluation
+  save_predictions: true          # Save predictions to file
