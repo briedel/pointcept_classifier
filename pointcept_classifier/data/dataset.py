@@ -256,43 +256,56 @@ class IceCubeDataset(Dataset):
     
     def _load_parquet_event(self, filepath: str, event_id: Union[int, str]) -> Tuple[np.ndarray, np.ndarray, int]:
         """Load a single event from Parquet file."""
-        table = pq.read_table(filepath)
-        df = table.to_pandas()
-        
-        # Filter for this event
-        if 'event_id' in df.columns:
-            event_df = df[df['event_id'] == event_id]
+        # Use filters for efficient event loading
+        if isinstance(event_id, str):
+            # Filter by event_id
+            table = pq.read_table(filepath, filters=[('event_id', '==', event_id)])
+            df = table.to_pandas()
         else:
-            # If no event_id, assume event_id is row group index
-            # This is a fallback - not recommended for production
-            event_df = df.iloc[event_id:event_id+1]
+            # Fallback: read entire file and filter
+            # This is less efficient but works when event_id is an index
+            table = pq.read_table(filepath)
+            df = table.to_pandas()
+            if 'event_id' in df.columns:
+                # Get unique event IDs and use the index
+                unique_ids = df['event_id'].unique()
+                if event_id < len(unique_ids):
+                    target_id = unique_ids[event_id]
+                    df = df[df['event_id'] == target_id]
+                else:
+                    df = df.iloc[0:0]  # Empty dataframe
+            else:
+                df = df.iloc[event_id:event_id+1]
+        
+        if df.empty:
+            raise ValueError(f"Event {event_id} not found in {filepath}")
         
         # Extract positions (x, y, z columns)
-        if all(col in event_df.columns for col in ['x', 'y', 'z']):
-            positions = event_df[['x', 'y', 'z']].values
-        elif 'positions' in event_df.columns:
+        if all(col in df.columns for col in ['x', 'y', 'z']):
+            positions = df[['x', 'y', 'z']].values
+        elif 'positions' in df.columns:
             # If positions stored as array column
-            positions = np.array(event_df['positions'].iloc[0])
+            positions = np.array(df['positions'].iloc[0])
         else:
             raise ValueError("Parquet file must contain 'x', 'y', 'z' columns or 'positions' column")
         
         # Extract features (all numeric columns except positions and label)
         exclude_cols = {'x', 'y', 'z', 'positions', 'label', 'event_id', 'split'}
-        feature_cols = [col for col in event_df.columns 
-                       if col not in exclude_cols and event_df[col].dtype in [np.float32, np.float64, np.int32, np.int64]]
+        feature_cols = [col for col in df.columns 
+                       if col not in exclude_cols and df[col].dtype in [np.float32, np.float64, np.int32, np.int64]]
         
         if feature_cols:
-            features = event_df[feature_cols].values
-        elif 'features' in event_df.columns:
+            features = df[feature_cols].values
+        elif 'features' in df.columns:
             # If features stored as array column
-            features = np.array(event_df['features'].iloc[0])
+            features = np.array(df['features'].iloc[0])
         else:
             # If no features, create dummy feature
             features = np.ones((positions.shape[0], 1))
         
         # Extract label
-        if 'label' in event_df.columns:
-            label = int(event_df['label'].iloc[0])
+        if 'label' in df.columns:
+            label = int(df['label'].iloc[0])
         else:
             label = 0  # Default label if not present
         
@@ -348,9 +361,27 @@ class IceCubeDataset(Dataset):
         label_counts = np.zeros(self.num_classes)
         
         if self.file_format == 'parquet':
+            # Efficient label counting for Parquet
+            processed_files = set()
             for filepath, event_id in self.events:
-                _, _, label = self._load_parquet_event(filepath, event_id)
-                label_counts[label] += 1
+                if filepath not in processed_files:
+                    # Read label and event_id columns only
+                    table = pq.read_table(filepath, columns=['event_id', 'label'])
+                    df = table.to_pandas()
+                    
+                    # Filter by split if available
+                    if 'split' in pq.read_table(filepath).column_names:
+                        split_table = pq.read_table(filepath, columns=['event_id', 'split'])
+                        split_df = split_table.to_pandas()
+                        event_ids = split_df[split_df['split'] == self.split]['event_id'].unique()
+                        df = df[df['event_id'].isin(event_ids)]
+                    
+                    # Count labels for unique events
+                    for eid in df['event_id'].unique():
+                        label = int(df[df['event_id'] == eid]['label'].iloc[0])
+                        label_counts[label] += 1
+                    
+                    processed_files.add(filepath)
         else:
             for filepath, event_idx in self.events:
                 with h5py.File(filepath, 'r') as f:
