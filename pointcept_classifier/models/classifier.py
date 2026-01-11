@@ -231,18 +231,15 @@ class SimplePointNet(nn.Module):
         Returns:
             features: (B, N, out_channels) point features
         """
-        batch_size, num_points, _ = x.shape
+        batch_size, num_points, in_channels = x.shape
         
-        # Reshape for BatchNorm1d
-        x = x.transpose(1, 2)  # (B, C, N)
-        x = x.reshape(batch_size * x.shape[1], num_points)  # (B*C, N)
+        # Reshape to process all points: (B*N, C)
+        x = x.reshape(-1, in_channels)
         
-        # Need to handle this differently
-        # Process each point independently
-        x = x.transpose(0, 1)  # (N, B*C)
+        # Apply MLP to each point
+        x = self.mlp1(x)
         
-        # Simpler approach: process all points
-        x = self.mlp1(x.reshape(batch_size, num_points, self.in_channels).reshape(-1, self.in_channels))
+        # Reshape back to (B, N, out_channels)
         x = x.reshape(batch_size, num_points, self.out_channels)
         
         return x

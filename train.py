@@ -24,7 +24,7 @@ def train_epoch(
     optimizer: optim.Optimizer,
     device: torch.device,
     logger: logging.Logger
-) -> float:
+) -> tuple:
     """Train for one epoch."""
     model.train()
     total_loss = 0.0
@@ -70,7 +70,7 @@ def validate(
     criterion: nn.Module,
     device: torch.device,
     logger: logging.Logger
-) -> float:
+) -> tuple:
     """Validate model."""
     model.eval()
     total_loss = 0.0

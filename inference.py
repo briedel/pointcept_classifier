@@ -7,6 +7,7 @@ import os
 from pathlib import Path
 import torch
 import numpy as np
+import logging
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 import json
@@ -180,5 +181,4 @@ def main():
 
 
 if __name__ == '__main__':
-    import logging
     main()

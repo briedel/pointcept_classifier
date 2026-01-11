@@ -16,6 +16,10 @@ import os
 import h5py
 
 
+# Constants
+EPSILON = 1e-6  # Small constant to avoid division by zero
+
+
 class IceCubeDataset(Dataset):
     """
     Dataset for IceCube neutrino events.
@@ -159,6 +163,9 @@ class IceCubeDataset(Dataset):
     
     def _normalize_positions(self, positions: np.ndarray) -> np.ndarray:
         """Normalize positions to unit cube."""
+        if positions.shape[0] == 0:
+            return positions
+        
         # Center at origin
         positions = positions - positions.mean(axis=0)
         # Scale to [-1, 1]
@@ -211,7 +218,7 @@ class IceCubeDataset(Dataset):
                 label_counts[label] += 1
         
         # Inverse frequency weighting
-        weights = 1.0 / (label_counts + 1e-6)
+        weights = 1.0 / (label_counts + EPSILON)
         weights = weights / weights.sum() * self.num_classes
         
         return torch.from_numpy(weights).float()
