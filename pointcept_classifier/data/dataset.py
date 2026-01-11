@@ -36,6 +36,7 @@ class IceCubeDataset(Dataset):
         max_points: Maximum number of points per event (for padding/sampling)
         normalize: Whether to normalize spatial coordinates
         augment: Whether to apply data augmentation
+        random_seed: Random seed for reproducibility (None for non-deterministic)
     """
     
     def __init__(
@@ -45,7 +46,8 @@ class IceCubeDataset(Dataset):
         max_points: int = 5000,
         normalize: bool = True,
         augment: bool = False,
-        class_names: Optional[List[str]] = None
+        class_names: Optional[List[str]] = None,
+        random_seed: Optional[int] = None
     ):
         super().__init__()
         self.data_path = data_path
@@ -53,6 +55,7 @@ class IceCubeDataset(Dataset):
         self.max_points = max_points
         self.normalize = normalize
         self.augment = augment and split == 'train'
+        self.random_seed = random_seed
         
         # Default IceCube event classes
         self.class_names = class_names or [
@@ -126,8 +129,12 @@ class IceCubeDataset(Dataset):
         # Sample or pad to max_points
         n_points = positions.shape[0]
         if n_points > self.max_points:
-            # Random sampling
-            indices = np.random.choice(n_points, self.max_points, replace=False)
+            # Random sampling (with seed for reproducibility if set)
+            if self.random_seed is not None:
+                rng = np.random.RandomState(self.random_seed + idx)
+                indices = rng.choice(n_points, self.max_points, replace=False)
+            else:
+                indices = np.random.choice(n_points, self.max_points, replace=False)
             positions = positions[indices]
             features = features[indices]
         elif n_points < self.max_points:

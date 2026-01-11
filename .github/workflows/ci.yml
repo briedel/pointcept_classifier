@@ -28,10 +28,11 @@ jobs:
         pip install pytest pytest-cov black flake8
         pip install -e .
     
-    - name: Check code style
-      run: |
-        black --check pointcept_classifier/ train.py inference.py
-        flake8 pointcept_classifier/ --max-line-length=100
+    - name: Check code style with black
+      run: black --check pointcept_classifier/ train.py inference.py
+      
+    - name: Check code style with flake8
+      run: flake8 pointcept_classifier/ --max-line-length=100
     
     - name: Check imports and syntax
       run: |
